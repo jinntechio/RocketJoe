@@ -1,0 +1,36 @@
+FROM ubuntu:20.04
+
+ENV TZ=America/US
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y \
+        build-essential \
+        ninja-build \
+        python3-pip \
+        python3-venv \
+        python3-dev curl gnupg apt-transport-https && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+#RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+#ARG UID=1000
+#RUN useradd -m -u ${UID} -s /bin/bash builder
+#USER builder
+
+RUN    pip3 install --no-cache-dir conan==1.60.0 pytest==6.2.5 cmake && \
+    conan user && \
+    conan profile new default --detect --force && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan config set general.parallel_download=$(nproc) && \
+    conan config set general.cpu_count=$(nproc) && \
+    conan remote add duckstax http://conan.duckstax.com #&& \
+    #mkdir /home/builder/.conan/data
+
+
+
+WORKDIR /app/build
+COPY conanfile.txt ./conanfile.txt
+RUN conan install conanfile.txt --build missing -s build_type=Release
