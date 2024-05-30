@@ -185,8 +185,9 @@ namespace services::wal {
     manager_wal_replicate_empty_t::manager_wal_replicate_empty_t(actor_zeta::detail::pmr::memory_resource* mr,
                                                                  actor_zeta::scheduler_raw scheduler,
                                                                  log_t& log)
-        : base_manager_wal_replicate_t(mr, scheduler) {
-        trace(log, "manager_wal_replicate_empty_t");
+        : base_manager_wal_replicate_t(mr, scheduler)
+        , log_(log.clone()) {
+        trace(log_, "manager_wal_replicate_empty_t");
         using namespace components;
         add_handler(handler_id(route::load), &manager_wal_replicate_empty_t::always_success<services::wal::id_t>);
         add_handler(handler_id(route::create_database),

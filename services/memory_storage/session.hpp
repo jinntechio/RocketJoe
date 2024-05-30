@@ -10,6 +10,7 @@
 class session_t {
 public:
     explicit session_t(actor_zeta::address_t address);
+    explicit session_t(actor_zeta::address_t address, size_t count_answers);
 
     template<class T>
     session_t(actor_zeta::address_t address, T statement)
@@ -23,6 +24,8 @@ public:
         return std::get<T>(data_);
     }
 
+    size_t& count_answers() { return count_answers_; }
+
     template<typename T>
     bool is_type() const {
         return std::holds_alternative<T>(data_);
@@ -33,7 +36,7 @@ public:
 private:
     actor_zeta::address_t address_;
     components::ql::variant_statement_t data_;
-    ///components::session::session_id_t session_;
+    size_t count_answers_ = 1;
 };
 
 // TODO Remove this session and use logic from collections

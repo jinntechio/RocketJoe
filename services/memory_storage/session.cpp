@@ -8,6 +8,11 @@ session_t::session_t(actor_zeta::address_t address)
     : address_(std::move(address))
     , data_(unused_statement_t()) {}
 
+session_t::session_t(actor_zeta::address_t address, size_t count_answers)
+    : address_(std::move(address))
+    , data_(unused_statement_t())
+    , count_answers_(count_answers) {}
+
 statement_type session_t::type() const {
     return std::visit(
         [](const auto& c) {

@@ -86,13 +86,9 @@ namespace otterbrix {
         void wait();
         void notify();
 
-        template<typename Tql>
-        auto send_ql(session_id_t& session, Tql& ql, std::string_view title, uint64_t handle)
-            -> components::cursor::cursor_t_ptr;
+        auto send_ql(session_id_t& session, components::ql::ql_statement_t* ql) -> components::cursor::cursor_t_ptr;
 
-        auto send_ql_new(session_id_t& session, components::ql::ql_statement_t* ql) -> components::cursor::cursor_t_ptr;
-
-        actor_zeta::address_t manager_dispatcher_;
+        actor_zeta::address_t memory_storage_;
         log_t log_;
         std::atomic_int i = 0;
         std::mutex output_mtx_;

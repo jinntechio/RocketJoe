@@ -7,11 +7,6 @@
 
 namespace services {
 
-    namespace dispatcher {
-        class manager_dispatcher_t;
-        using manager_dispatcher_ptr = std::unique_ptr<manager_dispatcher_t>;
-    } // namespace dispatcher
-
     namespace disk {
         class base_manager_disk_t;
         using manager_disk_ptr = std::unique_ptr<base_manager_disk_t>;
@@ -44,7 +39,6 @@ namespace otterbrix {
         actor_zeta::scheduler_ptr scheduler_;
         actor_zeta::scheduler_ptr scheduler_dispather_;
         actor_zeta::detail::pmr::memory_resource* resource;
-        services::dispatcher::manager_dispatcher_ptr manager_dispatcher_;
         services::disk::manager_disk_ptr manager_disk_;
         services::wal::manager_wal_ptr manager_wal_;
         services::memory_storage_ptr memory_storage_;

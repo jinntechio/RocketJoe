@@ -40,12 +40,12 @@ namespace services::wal {
         enum class unpack_rules : uint64_t
         {
             manager_disk = 0,
-            manager_dispatcher = 1
+            memory_storage = 1
         };
 
         void sync(address_pack& pack) {
             manager_disk_ = std::get<static_cast<uint64_t>(unpack_rules::manager_disk)>(pack);
-            manager_dispatcher_ = std::get<static_cast<uint64_t>(unpack_rules::manager_dispatcher)>(pack);
+            memory_storage_ = std::get<static_cast<uint64_t>(unpack_rules::memory_storage)>(pack);
         }
 
         manager_wal_replicate_t(actor_zeta::detail::pmr::memory_resource*,
@@ -69,7 +69,7 @@ namespace services::wal {
 
     private:
         actor_zeta::address_t manager_disk_ = actor_zeta::address_t::empty_address();
-        actor_zeta::address_t manager_dispatcher_ = actor_zeta::address_t::empty_address();
+        actor_zeta::address_t memory_storage_ = actor_zeta::address_t::empty_address();
         configuration::config_wal config_;
         log_t log_;
         std::unordered_map<std::string, actor_zeta::address_t> dispatcher_to_address_book_;
@@ -85,15 +85,20 @@ namespace services::wal {
 
         template<class T>
         auto always_success(session_id_t& session, T&&) -> void {
+            trace(log_, "manager_wal_replicate_empty_t::always_success: session: {}", session.data()); // Works fine
             actor_zeta::send(current_message()->sender(),
                              address(),
                              services::wal::handler_id(services::wal::route::success),
                              session,
                              services::wal::id_t(0));
+            trace(log_, "manager_wal_replicate_empty_t::always_success: sent finished"); // is not called
         }
 
         template<class... Args>
         auto nothing(Args&&...) -> void {}
+
+    private:
+        log_t log_;
     };
 
 } //namespace services::wal

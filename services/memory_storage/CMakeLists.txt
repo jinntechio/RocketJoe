@@ -2,6 +2,7 @@ project(memory_storage)
 
 set(${PROJECT_NAME}_SOURCES
     memory_storage.cpp
+    session.cpp
 )
 
 add_library(otterbrix_${PROJECT_NAME}
@@ -19,6 +20,8 @@ target_link_libraries(
     otterbrix::locks
     otterbrix::cursor
     otterbrix::session
+    otterbrix::ql
+    otterbrix::translator
     CONAN_PKG::spdlog
 )
 

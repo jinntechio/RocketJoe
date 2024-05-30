@@ -6,7 +6,8 @@ namespace services::memory_storage {
 
     enum class route : uint64_t
     {
-        execute_plan,
+        execute_ql,
+        execute_ql_finish,
         execute_plan_finish,
         load,
         load_finish

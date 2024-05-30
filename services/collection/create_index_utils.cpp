@@ -52,6 +52,7 @@ namespace services::collection {
                                        services::index::handler_id(services::index::route::create),
                                        std::move(*(index_ql.release())),
                                        context);
+                trace(context->log(), "create_index_impl; pipeline context sent");
                 break;
             }
             case components::ql::index_type::composite:
@@ -68,6 +69,7 @@ namespace services::collection {
                 break;
             }
         }
+        trace(context->log(), "create_index_impl finished");
     }
 
     void create_pending_index_impl(context_collection_t* context,
@@ -78,7 +80,7 @@ namespace services::collection {
 
     void process_pending_indexes(context_collection_t* context) {
         // If doc exist and pending indexes not empty -> add curr ql to indexes and run loop
-        trace(context->log(), "Process pending indexes");
+        trace(context->log(), "Process pending indexes; size: {}", context->pending_indexes().size());
 
         assert(!(context->storage().empty()) && "Require non empty document storage");
 
@@ -93,8 +95,9 @@ namespace services::collection {
                 continue;
             }
             create_pending_index_impl(context, pipeline_context.get(), std::move(index));
+            trace(context->log(), "Process pending indexes; index proccessed");
         }
-        context->storage().clear();
+        context->pending_indexes().clear();
     }
 
 } // namespace services::collection

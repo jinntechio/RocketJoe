@@ -35,7 +35,7 @@ namespace services::collection::executor {
                                          const std::string& name,
                                          const actor_zeta::address_t& index_address,
                                          context_collection_t* collection) {
-        debug(log_, "collection::create_index_finish");
+        trace(log_, "executor::create_index_finish");
         auto& create_index = sessions::find(collection->sessions(), session, name).get<sessions::create_index_t>();
         components::index::set_disk_agent(collection->index_engine(), create_index.id_index, index_address);
         components::index::insert(collection->index_engine(), create_index.id_index, collection->storage());
@@ -52,7 +52,7 @@ namespace services::collection::executor {
     void executor_t::create_index_finish_index_exist(const session_id_t& session,
                                                      const std::string& name,
                                                      context_collection_t* collection) {
-        debug(log_, "collection::create_index_finish_index_exist");
+        trace(log_, "executor::create_index_finish_index_exist");
         auto& create_index = sessions::find(collection->sessions(), session, name).get<sessions::create_index_t>();
         if (!create_index.is_pending) {
             actor_zeta::send(create_index.client,
@@ -67,14 +67,14 @@ namespace services::collection::executor {
     }
 
     void executor_t::index_modify_finish(const session_id_t& session, context_collection_t* collection) {
-        debug(log_, "collection::index_modify_finish");
+        trace(log_, "executor::index_modify_finish");
         sessions::remove(collection->sessions(), session);
     }
 
     void executor_t::index_find_finish(const session_id_t& session,
                                        const std::pmr::vector<document_id_t>& result,
                                        context_collection_t* collection) {
-        debug(log_, "collection::index_find_result: {}", result.size());
+        trace(log_, "executor::index_find_result: {}", result.size());
         components::index::sync_index_from_disk(collection->index_engine(),
                                                 current_message()->sender(),
                                                 result,

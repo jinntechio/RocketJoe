@@ -5,7 +5,7 @@
 #include <core/system_command.hpp>
 #include <services/collection/collection.hpp>
 #include <services/collection/route.hpp>
-#include <services/dispatcher/route.hpp>
+#include <services/memory_storage/route.hpp>
 
 namespace services::disk {
 
@@ -133,10 +133,11 @@ namespace services::disk {
                                          const collection_name_t& collection,
                                          const std::pmr::vector<document_ptr>& documents) -> void {
         trace(log_,
-              "manager_disk_t::write_documents , session : {} , database : {} , collection : {}",
+              "manager_disk_t::write_documents , session : {} , database : {} , collection : {}, documents count: {}",
               session.data(),
               database,
-              collection);
+              collection,
+              documents.size());
         command_write_documents_t command{database, collection, documents};
         append_command(commands_, session, command_t(command));
     }
@@ -202,7 +203,7 @@ namespace services::disk {
                              name,
                              collection);
         } else {
-            trace(log_, "manager_disk: create_index_agent : {}", name);
+            trace(log_, "manager_disk: create_index_agent : creating index: {}", name);
             index_agents_.erase(name);
             auto address_agent = spawn_actor<index_agent_disk_t>(
                 [&](index_agent_disk_t* ptr) { index_agents_.insert_or_assign(name, index_agent_disk_ptr(ptr)); },
@@ -223,6 +224,7 @@ namespace services::disk {
                              address_agent,
                              collection);
         }
+        trace(log_, "manager_disk: create_index_agent finished: {}", name);
     }
 
     void manager_disk_t::drop_index_agent(session_id_t& session,
@@ -280,20 +282,21 @@ namespace services::disk {
         }
     }
 
-    void manager_disk_t::load_indexes_([[maybe_unused]] session_id_t& session,
-                                       const actor_zeta::address_t& dispatcher) {
+    void manager_disk_t::load_indexes_([[maybe_unused]] session_id_t& session, const actor_zeta::address_t& storage) {
         auto indexes = make_unique(read_indexes_());
         metafile_indexes_->seek_eof();
+        trace(log_, "manager_disk: load_indexes_ : size:{}", indexes.size());
         for (auto& index : indexes) {
-            trace(log_, "manager_disk: load_indexes_ : {}", index->name());
+            trace(log_, "manager_disk: load_indexes_ : {}", index->name()); // last one to be called
             // Require to separate sessions for load and create index
             // For each index create we need to generate unique session id.
-            actor_zeta::send(dispatcher,
+            actor_zeta::send(storage,
                              address(),
-                             dispatcher::handler_id(dispatcher::route::execute_ql),
+                             memory_storage::handler_id(memory_storage::route::execute_ql),
                              session_id_t::generate_uid(),
                              index.release(),
-                             dispatcher);
+                             storage);
+            trace(log_, "manager_disk: load_indexes_ : sent to storage"); // is not called
         }
     }
 
@@ -360,8 +363,10 @@ namespace services::disk {
     }
 
     manager_disk_empty_t::manager_disk_empty_t(actor_zeta::detail::pmr::memory_resource* mr,
-                                               actor_zeta::scheduler_raw scheduler)
-        : base_manager_disk_t(mr, scheduler) {
+                                               actor_zeta::scheduler_raw scheduler,
+                                               log_t& log)
+        : base_manager_disk_t(mr, scheduler)
+        , log_(log.clone()) {
         add_handler(core::handler_id(core::route::sync),
                     &manager_disk_empty_t::nothing<std::tuple<actor_zeta::address_t, actor_zeta::address_t>>);
         add_handler(handler_id(route::create_agent), &manager_disk_empty_t::nothing<>);
@@ -390,6 +395,7 @@ namespace services::disk {
     }
 
     auto manager_disk_empty_t::load(session_id_t& session) -> void {
+        trace(log_, "manager_disk_empty_t::load");
         auto result = result_load_t::empty();
         actor_zeta::send(current_message()->sender(), address(), handler_id(route::load_finish), session, result);
     }
@@ -397,6 +403,7 @@ namespace services::disk {
     void manager_disk_empty_t::create_index_agent(session_id_t& session,
                                                   const components::ql::create_index_t& index,
                                                   services::collection::context_collection_t* collection) {
+        trace(log_, "manager_disk_empty_t::create_index_agent");
         auto name = index.name();
         actor_zeta::send(current_message()->sender(),
                          address(),
@@ -405,6 +412,7 @@ namespace services::disk {
                          name,
                          actor_zeta::address_t::empty_address(),
                          collection);
+        trace(log_, "manager_disk_empty_t::create_index_agent finished");
     }
 
 } //namespace services::disk

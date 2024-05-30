@@ -17,13 +17,13 @@ using namespace components::cursor;
 namespace otterbrix {
 
     wrapper_dispatcher_t::wrapper_dispatcher_t(actor_zeta::detail::pmr::memory_resource* mr,
-                                               actor_zeta::address_t manager_dispatcher,
+                                               actor_zeta::address_t memory_storage,
                                                log_t& log)
         : actor_zeta::cooperative_supervisor<wrapper_dispatcher_t>(mr, "wrapper_dispatcher")
-        , manager_dispatcher_(manager_dispatcher)
+        , memory_storage_(memory_storage)
         , log_(log.clone()) {
         add_handler(core::handler_id(core::route::load_finish), &wrapper_dispatcher_t::load_finish);
-        add_handler(dispatcher::handler_id(dispatcher::route::execute_ql_finish),
+        add_handler(memory_storage::handler_id(memory_storage::route::execute_ql_finish),
                     &wrapper_dispatcher_t::execute_ql_finish);
         add_handler(collection::handler_id(collection::route::size_finish), &wrapper_dispatcher_t::size_finish);
     }
@@ -34,33 +34,33 @@ namespace otterbrix {
         session_id_t session;
         trace(log_, "wrapper_dispatcher_t::load session: {}", session.data());
         init();
-        actor_zeta::send(manager_dispatcher_, address(), core::handler_id(core::route::load), session);
+        actor_zeta::send(memory_storage_, address(), core::handler_id(core::route::load), session);
         wait();
     }
 
     auto wrapper_dispatcher_t::create_database(session_id_t& session, const database_name_t& database) -> cursor_t_ptr {
         components::ql::create_database_t ql{database};
-        return send_ql_new(session, &ql);
+        return send_ql(session, &ql);
     }
 
     auto wrapper_dispatcher_t::drop_database(components::session::session_id_t& session,
                                              const database_name_t& database) -> cursor_t_ptr {
         components::ql::drop_database_t ql{database};
-        return send_ql_new(session, &ql);
+        return send_ql(session, &ql);
     }
 
     auto wrapper_dispatcher_t::create_collection(session_id_t& session,
                                                  const database_name_t& database,
                                                  const collection_name_t& collection) -> cursor_t_ptr {
         components::ql::create_collection_t ql{database, collection};
-        return send_ql_new(session, &ql);
+        return send_ql(session, &ql);
     }
 
     auto wrapper_dispatcher_t::drop_collection(components::session::session_id_t& session,
                                                const database_name_t& database,
                                                const collection_name_t& collection) -> cursor_t_ptr {
         components::ql::drop_collection_t ql{database, collection};
-        return send_ql_new(session, &ql);
+        return send_ql(session, &ql);
     }
 
     auto wrapper_dispatcher_t::insert_one(session_id_t& session,
@@ -70,11 +70,12 @@ namespace otterbrix {
         trace(log_, "wrapper_dispatcher_t::insert_one session: {}, collection name: {} ", session.data(), collection);
         init();
         components::ql::insert_one_t ql{database, collection, document};
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -86,11 +87,12 @@ namespace otterbrix {
         trace(log_, "wrapper_dispatcher_t::insert_many session: {}, collection name: {} ", session.data(), collection);
         init();
         components::ql::insert_many_t ql{database, collection, documents};
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -103,7 +105,7 @@ namespace otterbrix {
               condition->database_,
               condition->collection_);
         std::unique_ptr<components::ql::aggregate_statement> ql(condition);
-        return send_ql_new(session, ql.get());
+        return send_ql(session, ql.get());
     }
 
     auto wrapper_dispatcher_t::find_one(components::session::session_id_t& session,
@@ -114,7 +116,7 @@ namespace otterbrix {
               condition->database_,
               condition->collection_);
         std::unique_ptr<components::ql::aggregate_statement> ql(condition);
-        return send_ql_new(session, ql.get());
+        return send_ql(session, ql.get());
     }
 
     auto wrapper_dispatcher_t::delete_one(components::session::session_id_t& session,
@@ -127,11 +129,12 @@ namespace otterbrix {
         init();
         components::ql::delete_one_t ql{condition};
         std::unique_ptr<components::ql::ql_statement_t> _(condition);
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -146,11 +149,12 @@ namespace otterbrix {
         init();
         components::ql::delete_many_t ql{condition};
         std::unique_ptr<components::ql::ql_statement_t> _(condition);
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -167,11 +171,12 @@ namespace otterbrix {
         init();
         components::ql::update_one_t ql{condition, update, upsert};
         std::unique_ptr<components::ql::ql_statement_t> _(condition);
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -188,11 +193,12 @@ namespace otterbrix {
         init();
         components::ql::update_many_t ql{condition, update, upsert};
         std::unique_ptr<components::ql::ql_statement_t> _(condition);
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         &ql);
+                         &ql,
+                         address());
         wait();
         return std::move(cursor_store_);
     }
@@ -200,9 +206,9 @@ namespace otterbrix {
     auto wrapper_dispatcher_t::size(session_id_t& session,
                                     const database_name_t& database,
                                     const collection_name_t& collection) -> size_t {
-        trace(log_, "wrapper_dispatcher_t::size session: {}, collection name : {} ", session.data(), collection);
+        trace(log_, "wrapper_dispatcher_t::size session: {}, collection: {}.{} ", session.data(), database, collection);
         init();
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
                          collection::handler_id(collection::route::size),
                          session,
@@ -215,13 +221,13 @@ namespace otterbrix {
     auto wrapper_dispatcher_t::create_index(session_id_t& session, components::ql::create_index_t* ql)
         -> components::cursor::cursor_t_ptr {
         trace(log_, "wrapper_dispatcher_t::create_index session: {}, index: {}", session.data(), ql->name());
-        return send_ql_new(session, ql);
+        return send_ql(session, ql);
     }
 
     auto wrapper_dispatcher_t::drop_index(session_id_t& session, components::ql::drop_index_t* ql)
         -> components::cursor::cursor_t_ptr {
         trace(log_, "wrapper_dispatcher_t::create_index session: {}, index: {}", session.data(), ql->name());
-        return send_ql_new(session, ql);
+        return send_ql(session, ql);
     }
 
     auto wrapper_dispatcher_t::execute_ql(session_id_t& session, components::ql::variant_statement_t& query)
@@ -234,9 +240,9 @@ namespace otterbrix {
             [&](auto& ql) {
                 using type = std::decay_t<decltype(ql)>;
                 if constexpr (std::is_same_v<type, ql_statement_t*>) {
-                    return send_ql_new(session, ql);
+                    return send_ql(session, ql);
                 } else {
-                    return send_ql_new(session, &ql);
+                    return send_ql(session, &ql);
                 }
             },
             query);
@@ -301,35 +307,21 @@ namespace otterbrix {
         cv_.notify_all();
     }
 
-    cursor_t_ptr wrapper_dispatcher_t::send_ql_new(session_id_t& session, components::ql::ql_statement_t* ql) {
+    cursor_t_ptr wrapper_dispatcher_t::send_ql(session_id_t& session, components::ql::ql_statement_t* ql) {
         trace(log_, "wrapper_dispatcher_t::send_ql session: {}, {} ", session.data(), ql->to_string());
         init();
-        actor_zeta::send(manager_dispatcher_,
+        actor_zeta::send(memory_storage_,
                          address(),
-                         dispatcher::handler_id(dispatcher::route::execute_ql),
+                         memory_storage::handler_id(memory_storage::route::execute_ql),
                          session,
-                         ql);
+                         ql,
+                         address());
         wait();
         if (cursor_store_->is_error()) {
             //todo: handling error
             std::cerr << cursor_store_->get_error().what << std::endl;
         }
 
-        return std::move(cursor_store_);
-    }
-
-    template<typename Tql>
-    auto wrapper_dispatcher_t::send_ql(session_id_t& session, Tql& ql, std::string_view title, uint64_t handle)
-        -> cursor_t_ptr {
-        trace(log_,
-              "wrapper_dispatcher_t::{} session: {}, database: {} collection: {} ",
-              title,
-              session.data(),
-              ql.database_,
-              ql.collection_);
-        init();
-        actor_zeta::send(manager_dispatcher_, address(), handle, session, &ql);
-        wait();
         return std::move(cursor_store_);
     }
 

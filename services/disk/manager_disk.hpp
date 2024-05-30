@@ -100,7 +100,7 @@ namespace services::disk {
 
         auto agent() -> actor_zeta::address_t;
         void write_index_(const components::ql::create_index_t& index);
-        void load_indexes_(session_id_t& session, const actor_zeta::address_t& dispatcher);
+        void load_indexes_(session_id_t& session, const actor_zeta::address_t& storage);
         std::vector<components::ql::create_index_t> read_indexes_(const collection_name_t& collection_name) const;
         std::vector<components::ql::create_index_t> read_indexes_() const;
         void remove_index_(const index_name_t& index_name);
@@ -109,7 +109,7 @@ namespace services::disk {
 
     class manager_disk_empty_t final : public base_manager_disk_t {
     public:
-        manager_disk_empty_t(actor_zeta::detail::pmr::memory_resource*, actor_zeta::scheduler_raw);
+        manager_disk_empty_t(actor_zeta::detail::pmr::memory_resource*, actor_zeta::scheduler_raw, log_t& log);
 
         auto load(session_id_t& session) -> void;
         void create_index_agent(session_id_t& session,
@@ -118,6 +118,9 @@ namespace services::disk {
 
         template<class... Args>
         auto nothing(Args&&...) -> void {}
+
+    private:
+        log_t log_;
     };
 
 } //namespace services::disk

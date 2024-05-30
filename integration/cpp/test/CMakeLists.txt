@@ -25,7 +25,6 @@ target_link_libraries(
         otterbrix::cursor
         otterbrix::session
         otterbrix::document
-        otterbrix::dispatcher
         otterbrix::wal
         otterbrix::disk
         otterbrix::locks
