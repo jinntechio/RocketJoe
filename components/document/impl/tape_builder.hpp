@@ -44,7 +44,7 @@ namespace components::document {
             visit_null_atom();
         } else if constexpr (std::is_integral_v<T>) {
             if constexpr (std::is_same_v<T, bool>) {
-                append(0, value ? types::physical_type::BOOL_TRUE : types::physical_type::BOOL_FALSE);
+                append(value, types::physical_type::BOOL);
             } else if constexpr (std::is_signed_v<T>) {
                 if constexpr (sizeof(T) == 1) {
                     append(value, types::physical_type::INT8);

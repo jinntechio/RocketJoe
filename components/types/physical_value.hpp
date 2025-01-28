@@ -21,7 +21,6 @@ namespace components::types {
         // TODO: add memory ownership
         explicit physical_value() = default; // nullptr_t
         explicit physical_value(nullptr_t);
-        explicit physical_value(bool);
         // string-like
         template<typename T>
         physical_value(const T& value, typename std::enable_if<is_buffer_like<T>>::type* = nullptr)
@@ -55,8 +54,7 @@ namespace components::types {
 
     private:
         nullptr_t value_(std::integral_constant<physical_type, physical_type::NA>) const noexcept;
-        bool value_(std::integral_constant<physical_type, physical_type::BOOL_FALSE>) const noexcept;
-        bool value_(std::integral_constant<physical_type, physical_type::BOOL_TRUE>) const noexcept;
+        bool value_(std::integral_constant<physical_type, physical_type::BOOL>) const noexcept;
         uint8_t value_(std::integral_constant<physical_type, physical_type::UINT8>) const noexcept;
         uint16_t value_(std::integral_constant<physical_type, physical_type::UINT16>) const noexcept;
         uint32_t value_(std::integral_constant<physical_type, physical_type::UINT32>) const noexcept;
@@ -71,6 +69,8 @@ namespace components::types {
 
         template<typename T>
         static constexpr physical_type get_type_() {
+            if constexpr (std::is_same_v<T, bool>)
+                return physical_type::BOOL;
             if constexpr (std::is_same_v<T, uint8_t>)
                 return physical_type::UINT8;
             else if constexpr (std::is_same_v<T, uint16_t>)

@@ -630,8 +630,7 @@ namespace components::document {
         switch (value.physical_type()) {
             case types::physical_type::NA:
                 return is_null(json_pointer);
-            case types::physical_type::BOOL_FALSE:
-            case types::physical_type::BOOL_TRUE:
+            case types::physical_type::BOOL:
                 return value.as_bool() == get_bool(json_pointer);
             case types::physical_type::UINT8:
             case types::physical_type::UINT16:
@@ -692,8 +691,7 @@ namespace components::document {
                 if (key_update == "$set") {
                     auto elem = it_field->second->get_mut();
                     switch (elem->physical_type()) {
-                        case types::physical_type::BOOL_FALSE:
-                        case types::physical_type::BOOL_TRUE: {
+                        case types::physical_type::BOOL: {
                             auto new_value = elem->get_bool().value();
                             if (get_as<decltype(new_value)>(key_field) != new_value) {
                                 set(key_field, new_value);
@@ -756,8 +754,7 @@ namespace components::document {
                 if (key_update == "$inc") {
                     auto elem = it_field->second->get_mut();
                     switch (elem->physical_type()) {
-                        case types::physical_type::BOOL_FALSE:
-                        case types::physical_type::BOOL_TRUE: {
+                        case types::physical_type::BOOL: {
                             auto new_value = elem->get_bool().value();
                             set(key_field, new_value + get_as<decltype(new_value)>(key_field));
                             break;

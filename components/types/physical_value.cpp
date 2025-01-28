@@ -41,15 +41,12 @@ namespace components::types {
     }
 
     bool is_integral_type(const physical_type type) noexcept {
-        if (type >= physical_type::UINT8 && type <= physical_type::DOUBLE) {
+        if (type >= physical_type::BOOL && type <= physical_type::DOUBLE) {
             return true;
         } else {
             return false;
         }
     }
-
-    physical_value::physical_value(bool value)
-        : type_(value ? physical_type::BOOL_TRUE : physical_type::BOOL_FALSE) {}
 
     physical_value::physical_value(const char* data, uint32_t size)
         : type_(physical_type::STRING)
@@ -78,6 +75,17 @@ namespace components::types {
             return false;
         }
 
+        // handle booleans
+        if (type_ == physical_type::BOOL && other.type_ != physical_type::BOOL) {
+            return true;
+        }
+        if (type_ != physical_type::BOOL && other.type_ == physical_type::BOOL) {
+            return false;
+        }
+        if (type_ == physical_type::BOOL && other.type_ == physical_type::BOOL) {
+            return data_ < other.data_;
+        }
+
         assert(!(type_ == physical_type::INT128 || type_ == physical_type::UINT128) &&
                "physical value does not support int128 for now");
         assert(!(other.type_ == physical_type::INT128 || other.type_ == physical_type::UINT128) &&
@@ -90,7 +98,7 @@ namespace components::types {
                    std::string_view(reinterpret_cast<char*>(other.data_), other.size_);
         }
 
-        // handle booleans and non-comparable types
+        // handle non-comparable types
 
         if (!is_integral_type(type_) || !is_integral_type(other.type_)) {
             return type_ < other.type_;
@@ -186,13 +194,7 @@ namespace components::types {
 
     bool physical_value::operator>=(const physical_value& other) const noexcept { return !(*this < other); }
 
-    physical_value::operator bool() const noexcept {
-        if (type_ == physical_type::BOOL_TRUE) {
-            return true;
-        } else {
-            return data_ != 0;
-        }
-    }
+    physical_value::operator bool() const noexcept { return data_; }
 
     physical_type physical_value::type() const noexcept { return type_; }
 
@@ -201,14 +203,9 @@ namespace components::types {
         return nullptr;
     }
 
-    bool physical_value::value_(std::integral_constant<physical_type, physical_type::BOOL_FALSE>) const noexcept {
-        assert(type_ == physical_type::BOOL_FALSE);
-        return false;
-    }
-
-    bool physical_value::value_(std::integral_constant<physical_type, physical_type::BOOL_TRUE>) const noexcept {
-        assert(type_ == physical_type::BOOL_TRUE);
-        return true;
+    bool physical_value::value_(std::integral_constant<physical_type, physical_type::BOOL>) const noexcept {
+        assert(type_ == physical_type::BOOL);
+        return data_;
     }
 
     uint8_t physical_value::value_(std::integral_constant<physical_type, physical_type::UINT8>) const noexcept {

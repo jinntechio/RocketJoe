@@ -39,8 +39,7 @@ namespace components::document {
 
     bool value_t::operator<(const value_t& rhs) const {
         switch (physical_type()) {
-            case types::physical_type::BOOL_FALSE:
-            case types::physical_type::BOOL_TRUE:
+            case types::physical_type::BOOL:
                 return as_bool() < rhs.as_bool();
             case types::physical_type::UINT8:
             case types::physical_type::UINT16:
@@ -86,15 +85,7 @@ namespace components::document {
         }
     }
 
-    bool value_t::is_bool() const noexcept {
-        switch (physical_type()) {
-            case types::physical_type::BOOL_TRUE:
-            case types::physical_type::BOOL_FALSE:
-                return true;
-            default:
-                return false;
-        }
-    }
+    bool value_t::is_bool() const noexcept { return physical_type() == types::physical_type::BOOL; }
 
     bool value_t::is_int() const noexcept {
         switch (physical_type()) {
@@ -146,8 +137,7 @@ namespace components::document {
         }
 
         switch (value1.physical_type()) {
-            case types::physical_type::BOOL_FALSE:
-            case types::physical_type::BOOL_TRUE:
+            case types::physical_type::BOOL:
                 return value_t{tape, value1.as_bool() + value2.as_bool()};
             case types::physical_type::UINT8:
             case types::physical_type::UINT16:

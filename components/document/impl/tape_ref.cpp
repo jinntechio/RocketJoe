@@ -72,14 +72,9 @@ namespace components::document::internal {
         return doc_->get_tape(json_index_) == tape_uint64;
     }
 
-    bool tape_ref::is_false() const noexcept {
-        constexpr uint64_t tape_false = uint64_t(types::physical_type::BOOL_FALSE) << 56;
-        return doc_->get_tape(json_index_) == tape_false;
-    }
-
-    bool tape_ref::is_true() const noexcept {
-        constexpr uint64_t tape_true = uint64_t(types::physical_type::BOOL_TRUE) << 56;
-        return doc_->get_tape(json_index_) == tape_true;
+    bool tape_ref::is_bool() const noexcept {
+        constexpr uint64_t tape_bool = uint8_t(types::physical_type::BOOL);
+        return reinterpret_cast<const uint8_t*>(&doc_->get_tape(json_index_))[7] == tape_bool;
     }
 
     bool tape_ref::is_null_on_tape() const noexcept {

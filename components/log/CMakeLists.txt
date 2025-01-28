@@ -22,6 +22,7 @@ target_link_libraries(
         otterbrix_${CURRENT_TARGET} PUBLIC
         spdlog::spdlog
         Boost::boost
+        dl
         fmt::fmt
 )
 

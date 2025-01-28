@@ -29,8 +29,7 @@ namespace components::document {
             bool is_uint16() const noexcept;
             bool is_uint32() const noexcept;
             bool is_uint64() const noexcept;
-            bool is_false() const noexcept;
-            bool is_true() const noexcept;
+            bool is_bool() const noexcept;
             bool is_null_on_tape() const noexcept; // different name to avoid clash with is_null.
 
             template<typename T, typename std::enable_if<(sizeof(T) < sizeof(uint64_t)), uint8_t>::type = 0>

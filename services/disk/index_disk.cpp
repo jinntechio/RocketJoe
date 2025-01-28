@@ -25,8 +25,7 @@ namespace services::disk {
 
     components::types::physical_value convert(const components::document::value_t& value) {
         switch (value.physical_type()) {
-            case components::types::physical_type::BOOL_FALSE:
-            case components::types::physical_type::BOOL_TRUE:
+            case components::types::physical_type::BOOL:
                 return components::types::physical_value(value.as_bool());
             case components::types::physical_type::UINT8:
                 return components::types::physical_value(value.as<uint8_t>());

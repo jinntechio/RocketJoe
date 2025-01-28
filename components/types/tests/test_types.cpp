@@ -29,8 +29,8 @@ TEST_CASE("physical_value") {
 
     INFO("value getters") {
         REQUIRE(values[0].value<physical_type::NA>() == nullptr);
-        REQUIRE(values[1].value<physical_type::BOOL_FALSE>() == false);
-        REQUIRE(values[2].value<physical_type::BOOL_TRUE>() == true);
+        REQUIRE(values[1].value<physical_type::BOOL>() == false);
+        REQUIRE(values[2].value<physical_type::BOOL>() == true);
         REQUIRE(values[3].value<physical_type::UINT8>() == uint8_t(53));
         REQUIRE(values[4].value<physical_type::UINT16>() == uint16_t(643));
         REQUIRE(values[5].value<physical_type::UINT32>() == uint32_t(3167));
@@ -49,8 +49,8 @@ TEST_CASE("physical_value") {
         std::shuffle(values.begin(), values.end(), std::default_random_engine{0});
         std::sort(values.begin(), values.end());
 
-        REQUIRE(values[0].type() == physical_type::BOOL_FALSE);
-        REQUIRE(values[1].type() == physical_type::BOOL_TRUE);
+        REQUIRE(values[0].type() == physical_type::BOOL);
+        REQUIRE(values[1].type() == physical_type::BOOL);
         REQUIRE(values[2].type() == physical_type::INT64);
         REQUIRE(values[3].type() == physical_type::INT32);
         REQUIRE(values[4].type() == physical_type::INT16);

@@ -282,11 +282,8 @@ namespace components::document {
         auto build_value = [&]() {
             auto element1 = mut_src_->next_element();
             switch (value.physical_type()) {
-                case types::physical_type::BOOL_FALSE:
-                    builder_.build(false);
-                    break;
-                case types::physical_type::BOOL_TRUE:
-                    builder_.build(true);
+                case types::physical_type::BOOL:
+                    builder_.build(value.as_bool());
                     break;
                 case types::physical_type::UINT8:
                 case types::physical_type::UINT16:

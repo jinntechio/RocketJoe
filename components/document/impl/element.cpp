@@ -568,10 +568,8 @@ namespace components::document::impl {
 
     document_result<bool> element::get_bool() const noexcept {
         assert(tape_.usable());
-        if (tape_.is_true()) {
-            return true;
-        } else if (tape_.is_false()) {
-            return false;
+        if (tape_.is_bool()) {
+            return tape_.template next_tape_value<bool>();
         }
         return INCORRECT_TYPE;
     }

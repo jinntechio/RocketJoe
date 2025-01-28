@@ -177,9 +177,9 @@ namespace components::document {
 
         inline std::ostream& operator<<(std::ostream& out, types::logical_type type) {
             switch (type) {
-                case types::logical_type::HUGEINT:
+                case types::logical_type::BIGINT:
                     return out << "int64_t";
-                case types::logical_type::UHUGEINT:
+                case types::logical_type::UBIGINT:
                     return out << "uint64_t";
                 case types::logical_type::DOUBLE:
                     return out << "double";
